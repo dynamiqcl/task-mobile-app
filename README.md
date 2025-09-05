@@ -1,4 +1,137 @@
-# Task Manager Mobile App
+# 📱 Task Manager Mobile App
+
+Una aplicación móvil desarrollada con React Native y Expo para la gestión de tareas empresariales.
+
+## 🚀 Características
+
+- **Autenticación de usuarios** con login/logout seguro
+- **Gestión de tareas** con estados y prioridades
+- **Sistema de notificaciones** push en tiempo real
+- **Carga de evidencias** con cámara y galería
+- **Filtrado por usuario** para ver solo tareas asignadas
+- **Interfaz intuitiva** con navegación por tabs
+- **Modo offline** con sincronización automática
+
+## 📋 Pantallas
+
+- 🔐 **Login** - Autenticación de usuarios
+- 📝 **Lista de Tareas** - Vista de tareas asignadas al usuario
+- 📄 **Detalle de Tarea** - Información completa y gestión de evidencias
+- 🔔 **Notificaciones** - Centro de notificaciones en tiempo real
+- 👤 **Perfil** - Información del usuario y configuración
+
+## 🛠️ Tecnologías
+
+- **React Native** con Expo
+- **TypeScript** para tipado estático
+- **React Navigation** para navegación
+- **Expo Notifications** para push notifications
+- **AsyncStorage** para persistencia local
+- **Expo Camera/ImagePicker** para captura de evidencias
+
+## 🏃‍♂️ Inicio Rápido
+
+### Prerequisitos
+- Node.js 16+
+- Expo CLI
+- Simulador iOS/Android o dispositivo físico
+
+### Instalación
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/task-mobile-app.git
+
+# Navegar al directorio
+cd task-mobile-app
+
+# Instalar dependencias
+npm install
+
+# Iniciar el servidor de desarrollo
+npm start
+```
+
+### Credenciales de Demo
+
+Para probar la aplicación, puedes usar estas credenciales:
+
+- **Usuario**: `ana.martinez` | **Contraseña**: `ana123`
+- **Usuario**: `demo` | **Contraseña**: `demo`
+
+## 🔧 Configuración
+
+### Backend API
+
+La aplicación se conecta a un backend REST API. Configura la URL en `src/services/api.ts`:
+
+```typescript
+const API_BASE_URL = 'http://192.168.7.177:3000/api';
+```
+
+### Endpoints Requeridos
+
+- `POST /auth/login` - Autenticación
+- `GET /tasks` - Obtener todas las tareas
+- `GET /tasks/my-tasks` - Obtener tareas del usuario (opcional)
+- `GET /notifications` - Obtener notificaciones
+- `POST /users/push-token` - Guardar token de notificaciones
+
+## 📱 Instalación en Dispositivo
+
+### Android
+```bash
+npm run android
+```
+
+### iOS
+```bash
+npm run ios
+```
+
+### Web
+```bash
+npm run web
+```
+
+## 🧪 Testing
+
+La aplicación incluye un modo mock para testing sin backend:
+
+```typescript
+// En src/services/api.ts
+const USE_MOCK_API = true; // Cambiar a false para usar backend real
+```
+
+## 📦 Build de Producción
+
+```bash
+# Build para Android
+expo build:android
+
+# Build para iOS
+expo build:ios
+```
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/nueva-caracteristica`)
+3. Commit tus cambios (`git commit -m 'Agregar nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 👥 Autor
+
+Desarrollado por Ignacio Sebastián Tapia Loyola
+
+## 🐛 Reportar Issues
+
+Si encuentras algún problema, por favor [abre un issue](https://github.com/tu-usuario/task-mobile-app/issues) en GitHub.
 
 Aplicación móvil desarrollada con React Native y Expo para gestionar tareas y recibir notificaciones push.
 
