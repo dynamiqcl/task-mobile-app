@@ -246,6 +246,110 @@ const TaskDetailScreen = () => {
           )}
         </View>
 
+        {/* Progreso y Métricas */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Progreso y Métricas</Text>
+          
+          {task.progress && (
+            <View style={styles.infoRow}>
+              <Ionicons name="bar-chart-outline" size={20} color="#059669" />
+              <Text style={styles.infoLabel}>Progreso:</Text>
+              <Text style={[styles.infoValue, styles.progressText]}>
+                {Math.round(parseFloat(task.progress.toString()))}%
+              </Text>
+            </View>
+          )}
+
+          {task.estimatedHours && (
+            <View style={styles.infoRow}>
+              <Ionicons name="time-outline" size={20} color="#7c3aed" />
+              <Text style={styles.infoLabel}>Horas estimadas:</Text>
+              <Text style={styles.infoValue}>{task.estimatedHours}h</Text>
+            </View>
+          )}
+
+          {task.actualHours && (
+            <View style={styles.infoRow}>
+              <Ionicons name="hourglass-outline" size={20} color="#ea580c" />
+              <Text style={styles.infoLabel}>Horas reales:</Text>
+              <Text style={styles.infoValue}>{task.actualHours}h</Text>
+            </View>
+          )}
+
+          {task.difficultyRating && (
+            <View style={styles.infoRow}>
+              <Ionicons name="speedometer-outline" size={20} color="#dc2626" />
+              <Text style={styles.infoLabel}>Dificultad:</Text>
+              <Text style={styles.infoValue}>
+                {task.difficultyRating}/10
+              </Text>
+            </View>
+          )}
+
+          {task.priority === 'critical' && (
+            <View style={styles.infoRow}>
+              <Ionicons name="warning-outline" size={20} color="#dc2626" />
+              <Text style={styles.infoLabel}>Tipo:</Text>
+              <Text style={[styles.infoValue, styles.criticalText]}>Crítica</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Notas y Observaciones */}
+        {(task.startNotes || task.completionNotes || (task as any).notes) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notas y Observaciones</Text>
+            
+            {task.startNotes && (
+              <View style={styles.noteContainer}>
+                <Text style={styles.noteTitle}>Notas de inicio:</Text>
+                <Text style={styles.noteText}>{task.startNotes}</Text>
+              </View>
+            )}
+
+            {task.completionNotes && (
+              <View style={styles.noteContainer}>
+                <Text style={styles.noteTitle}>Notas de finalización:</Text>
+                <Text style={styles.noteText}>{task.completionNotes}</Text>
+              </View>
+            )}
+
+            {(task as any).notes && (
+              <View style={styles.noteContainer}>
+                <Text style={styles.noteTitle}>Notas adicionales:</Text>
+                <Text style={styles.noteText}>{(task as any).notes}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Fechas importantes */}
+        {((task as any).startedAt || (task as any).completedAt) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Historial de Fechas</Text>
+            
+            {(task as any).startedAt && (
+              <View style={styles.infoRow}>
+                <Ionicons name="play-circle-outline" size={20} color="#059669" />
+                <Text style={styles.infoLabel}>Iniciado:</Text>
+                <Text style={styles.infoValue}>
+                  {new Date((task as any).startedAt).toLocaleDateString('es-ES')} - {new Date((task as any).startedAt).toLocaleTimeString('es-ES')}
+                </Text>
+              </View>
+            )}
+
+            {(task as any).completedAt && (
+              <View style={styles.infoRow}>
+                <Ionicons name="checkmark-circle-outline" size={20} color="#10b981" />
+                <Text style={styles.infoLabel}>Completado:</Text>
+                <Text style={styles.infoValue}>
+                  {new Date((task as any).completedAt).toLocaleDateString('es-ES')} - {new Date((task as any).completedAt).toLocaleTimeString('es-ES')}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Evidencias */}
         <View style={styles.section}>
           <View style={styles.evidenceHeader}>
@@ -377,6 +481,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#1f2937',
+  },
+  progressText: {
+    color: '#059669',
+    fontWeight: '600',
+  },
+  criticalText: {
+    color: '#dc2626',
+    fontWeight: '600',
+  },
+  noteContainer: {
+    backgroundColor: '#f9fafb',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  noteTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  noteText: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
   },
   evidenceHeader: {
     flexDirection: 'row',

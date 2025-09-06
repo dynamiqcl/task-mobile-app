@@ -10,21 +10,21 @@ export default function App() {
   const authValue = useAuthProvider();
 
   useEffect(() => {
-    // Inicializar el servicio de notificaciones
-    notificationService.initialize();
+    // Inicializar el servicio de notificaciones (deshabilitado en Expo Go)
+    // notificationService.initialize();
 
-    // Configurar listeners para notificaciones
-    const cleanup = notificationService.setupNotificationListeners(
-      (notification) => {
-        console.log('Notificación recibida:', notification);
-      },
-      (response) => {
-        console.log('Usuario tocó la notificación:', response);
-        // Aquí puedes navegar a una pantalla específica basada en la notificación
-      }
-    );
+    // Configurar listeners para notificaciones (deshabilitado en Expo Go)
+    // const cleanup = notificationService.setupNotificationListeners(
+    //   (notification) => {
+    //     console.log('Notificación recibida:', notification);
+    //   },
+    //   (response) => {
+    //     console.log('Usuario tocó la notificación:', response);
+    //     // Aquí puedes navegar a una pantalla específica basada en la notificación
+    //   }
+    // );
 
-    return cleanup;
+    // return cleanup;
   }, []);
 
   return (

@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  handleTokenExpired: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,16 +61,28 @@ export const useAuthProvider = (): AuthContextType => {
       const response: AuthResponse = await apiService.login(username, password);
       console.log('Login response user:', response.user);
       
+      // Mapear la respuesta del backend al formato esperado por la app
+      const mappedUser: User = {
+        id: response.user.id,
+        username: response.user.username,
+        email: response.user.email,
+        fullName: response.user.name || response.user.fullName || response.user.username,
+        role: response.user.role,
+        organizationId: response.user.organizationId || 'default-org',
+      };
+      
+      console.log('Mapped user:', mappedUser);
+      
       // Guardar en AsyncStorage
       await AsyncStorage.setItem('auth_token', response.token);
-      await AsyncStorage.setItem('user_data', JSON.stringify(response.user));
+      await AsyncStorage.setItem('user_data', JSON.stringify(mappedUser));
       
       // Configurar el token en el servicio API
       apiService.setToken(response.token);
       
       // Actualizar el estado
-      setUser(response.user);
-      console.log('User set in state:', response.user);
+      setUser(mappedUser);
+      console.log('User set in state:', mappedUser);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -93,12 +106,19 @@ export const useAuthProvider = (): AuthContextType => {
     }
   };
 
+  // Función para manejar errores de token expirado
+  const handleTokenExpired = async () => {
+    console.log('🔴 Token expired, logging out user');
+    await logout();
+  };
+
   return {
     user,
     isLoading,
     isAuthenticated: !!user,
     login,
     logout,
+    handleTokenExpired,
   };
 };
 

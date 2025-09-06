@@ -55,7 +55,7 @@ const LoginScreen = () => {
             {/* Información de demo */}
             <View style={styles.demoInfo}>
               <Text style={styles.demoTitle}>Demo - Credenciales de prueba:</Text>
-              <Text style={styles.demoText}>• Usuario: ana.martinez | Contraseña: ana123</Text>
+              <Text style={styles.demoText}>• Usuario: ana.martinez | Contraseña: 123456</Text>
               <Text style={styles.demoText}>• Usuario: demo | Contraseña: demo</Text>
             </View>
 

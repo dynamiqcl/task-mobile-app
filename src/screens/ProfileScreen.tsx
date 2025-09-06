@@ -23,28 +23,11 @@ const ProfileScreen = () => {
   }, []);
 
   const setupNotifications = async () => {
-    // Inicializar notificaciones
-    await notificationService.initialize();
-    
-    // Obtener el token
-    const token = notificationService.getExpoPushToken();
-    setPushToken(token);
-
-    // Obtener número de notificaciones pendientes
-    const count = await notificationService.getPendingNotificationCount();
-    setNotificationCount(count);
-
-    // Configurar listeners
-    const cleanup = notificationService.setupNotificationListeners(
-      (notification) => {
-        console.log('Notificación recibida:', notification);
-      },
-      (response) => {
-        console.log('Usuario tocó notificación:', response);
-      }
-    );
-
-    return cleanup;
+    // Notificaciones deshabilitadas en Expo Go para evitar errores
+    console.log('Notificaciones deshabilitadas para Expo Go');
+    setPushToken('No disponible en Expo Go');
+    setNotificationCount(0);
+    return () => {}; // Return empty cleanup function
   };
 
   const handleLogout = () => {
@@ -59,18 +42,11 @@ const ProfileScreen = () => {
   };
 
   const testNotification = async () => {
-    await notificationService.scheduleLocalNotification(
-      'Notificación de Prueba',
-      'Esta es una notificación de prueba para verificar que funciona correctamente.',
-      2
-    );
-    Alert.alert('Notificación Programada', 'Recibirás una notificación en 2 segundos');
+    Alert.alert('Notificaciones Deshabilitadas', 'Las notificaciones no están disponibles en Expo Go');
   };
 
   const clearNotifications = async () => {
-    await notificationService.cancelAllNotifications();
-    setNotificationCount(0);
-    Alert.alert('Notificaciones Limpiadas', 'Se cancelaron todas las notificaciones pendientes');
+    Alert.alert('Notificaciones Deshabilitadas', 'Las notificaciones no están disponibles en Expo Go');
   };
 
   const ProfileSection = ({ title, children }: { title: string; children: React.ReactNode }) => (

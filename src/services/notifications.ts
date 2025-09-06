@@ -23,6 +23,12 @@ class NotificationService {
       return;
     }
 
+    // Verificar si estamos en Expo Go (que no soporta notificaciones push completamente)
+    if (Constants.appOwnership === 'expo') {
+      console.log('Notificaciones push no disponibles en Expo Go');
+      return;
+    }
+
     // Solicitar permisos
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;

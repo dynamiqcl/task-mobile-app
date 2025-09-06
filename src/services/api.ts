@@ -1,6 +1,6 @@
 import { Task, User, Notification, AuthResponse, Evidence } from '../types';
 
-const API_BASE_URL = 'http://192.168.7.177:3000/api'; // IP local para dispositivos móviles
+const API_BASE_URL = 'http://192.168.1.4:3000/api'; // IP local para dispositivos móviles
 const USE_MOCK_API = false; // Cambiar a false cuando tengas un servidor real
 
 // Mock data para pruebas
@@ -96,6 +96,40 @@ class ApiService {
     this.token = token;
   }
 
+  // Función para decodificar el token JWT (sin verificar la firma)
+  private decodeJWT(token: string) {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  }
+
+  // Verificar si el token ha expirado
+  private isTokenExpired(): boolean {
+    if (!this.token) return true;
+    
+    const decoded = this.decodeJWT(this.token);
+    if (!decoded || !decoded.exp) return true;
+    
+    const currentTime = Math.floor(Date.now() / 1000);
+    const isExpired = decoded.exp < currentTime;
+    
+    console.log('🔍 Token expiry check:');
+    console.log('Current time:', currentTime);
+    console.log('Token expires at:', decoded.exp);
+    console.log('Is expired:', isExpired);
+    
+    return isExpired;
+  }
+
   private async mockDelay(ms: number = 500): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -104,6 +138,12 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    // Verificar si el token ha expirado
+    if (this.token && this.isTokenExpired()) {
+      console.warn('⚠️ Token has expired!');
+      throw new Error('Token has expired. Please login again.');
+    }
+
     const url = `${API_BASE_URL}${endpoint}`;
     
     const config: RequestInit = {
@@ -116,15 +156,34 @@ class ApiService {
     };
 
     try {
+      console.log('🔄 API Request:', url);
+      console.log('🔑 Token:', this.token ? 'Present' : 'Missing');
+      console.log('⚙️  Config:', config);
+      
       const response = await fetch(url, config);
       
+      console.log('📡 Response Status:', response.status);
+      console.log('📋 Response Headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
-      return await response.json();
+      // Verificar content-type antes de parsear JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('⚠️ Non-JSON response received:', text);
+        throw new Error(`Expected JSON but received: ${contentType}. Body: ${text}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ API Response Data:', data);
+      return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('💥 API request failed:', error);
       throw error;
     }
   }
@@ -136,7 +195,7 @@ class ApiService {
       
       // Validación simple para demo
       if ((username === 'demo' && password === 'demo') || 
-          (username === 'ana.martinez' && password === 'ana123')) {
+          (username === 'ana.martinez' && password === '123456')) {
         return {
           token: 'mock_token_12345',
           user: mockUser,
@@ -178,14 +237,13 @@ class ApiService {
       return mockTasks;
     }
     
-    // Intentar el endpoint específico primero
-    try {
-      return this.request<Task[]>('/tasks/my-tasks');
-    } catch (error) {
-      // Si no existe el endpoint, lanzar el error para que el componente use el fallback
-      console.log('Endpoint /tasks/my-tasks no disponible, usando fallback');
-      throw error;
-    }
+    // Usar directamente el endpoint /tasks que sabemos que funciona
+    console.log('Obteniendo tareas del endpoint /tasks');
+    const allTasks = await this.request<Task[]>('/tasks');
+    
+    // No podemos filtrar aquí porque no tenemos acceso al usuario actual
+    // El filtrado se hará en el componente TaskListScreen
+    return allTasks;
   }
 
   async getTaskById(id: string): Promise<Task> {
@@ -240,6 +298,7 @@ class ApiService {
       return mockEvidence;
     }
     
+    // Usar el endpoint correcto para subir evidencias
     const url = `${API_BASE_URL}/tasks/${taskId}/evidence`;
     
     const response = await fetch(url, {
@@ -263,7 +322,12 @@ class ApiService {
       return []; // No hay evidencias por defecto
     }
     
-    return this.request<Evidence[]>(`/tasks/${taskId}/evidence`);
+    // Por ahora mantener deshabilitado hasta confirmar el endpoint exacto para listar evidencias
+    // Necesitamos el endpoint GET para listar evidencias de una tarea específica
+    console.log('Evidencias temporalmente deshabilitadas - verificando endpoint correcto');
+    return [];
+    
+    // return this.request<Evidence[]>(`/tasks/${taskId}/evidence`);
   }
 
   // Notificaciones

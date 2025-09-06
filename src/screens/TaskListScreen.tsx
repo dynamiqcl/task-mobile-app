@@ -25,7 +25,24 @@ const TaskListScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation<TaskListNavigationProp>();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  const handleReLogin = async () => {
+    Alert.alert(
+      'Sesión Expirada',
+      'Tu sesión ha expirado. ¿Deseas volver a iniciar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Sí', 
+          onPress: async () => {
+            await logout();
+            // La navegación se manejará automáticamente por el estado de autenticación
+          }
+        }
+      ]
+    );
+  };
 
   useEffect(() => {
     if (user) {
@@ -43,37 +60,27 @@ const TaskListScreen = () => {
     try {
       console.log('Cargando tareas para usuario:', user.id, user.username);
       
-      // Intentar usar el endpoint específico para tareas del usuario
-      try {
-        const fetchedTasks = await apiService.getMyTasks();
-        console.log('Tareas obtenidas del endpoint específico:', fetchedTasks.length);
-        setTasks(fetchedTasks);
-      } catch (error) {
-        console.log('Endpoint específico no disponible, intentando con parámetro userId');
-        
-        // Segundo intento: usar getTasks con el userId como parámetro
-        try {
-          const tasksWithUserId = await apiService.getTasks(user.id);
-          console.log('Tareas obtenidas con parámetro userId:', tasksWithUserId.length);
-          setTasks(tasksWithUserId);
-        } catch (paramError) {
-          console.log('Endpoint con parámetro no disponible, usando fallback con filtro local');
-          
-          // Fallback final: usar el endpoint general y filtrar localmente
-          const allTasks = await apiService.getTasks();
-          console.log('Total de tareas obtenidas:', allTasks.length);
-          console.log('Filtrando tareas para assigneeId:', user.id);
-          
-          const userTasks = allTasks.filter(task => {
-            console.log(`Tarea ${task.id}: assigneeId=${task.assigneeId}, userId=${user.id}, match=${task.assigneeId === user.id}`);
-            return task.assigneeId === user.id;
-          });
-          
-          console.log('Tareas filtradas para el usuario:', userTasks.length);
-          setTasks(userTasks);
-        }
+      // Usar directamente getMyTasks que ahora llama a /tasks
+      const allTasks = await apiService.getMyTasks();
+      console.log('Total de tareas obtenidas:', allTasks.length);
+      
+      // Filtrar las tareas para mostrar solo las asignadas al usuario actual
+      const userTasks = allTasks.filter(task => {
+        const isAssigned = task.assigneeId === user.id;
+        console.log(`Tarea "${task.title}": assigneeId=${task.assigneeId}, userId=${user.id}, asignada=${isAssigned}`);
+        return isAssigned;
+      });
+      
+      console.log('Tareas filtradas para el usuario:', userTasks.length);
+      setTasks(userTasks);
+    } catch (error: any) {
+      // Verificar si es un error de token expirado
+      if (error.message && error.message.includes('Token has expired')) {
+        console.log('🔴 Token expirado detectado en TaskListScreen');
+        handleReLogin();
+        return;
       }
-    } catch (error) {
+      
       Alert.alert('Error', 'No se pudieron cargar las tareas');
       console.error('Error loading tasks:', error);
     } finally {
@@ -122,6 +129,7 @@ const TaskListScreen = () => {
   const getPriorityIcon = (priority: Task['priority']) => {
     switch (priority) {
       case 'urgent':
+      case 'critical':
         return 'alert-circle';
       case 'high':
         return 'arrow-up-circle';
@@ -173,9 +181,30 @@ const TaskListScreen = () => {
           <Text style={styles.priorityText}>
             {item.priority === 'urgent' ? 'Urgente' :
              item.priority === 'high' ? 'Alta' :
+             item.priority === 'critical' ? 'Crítica' :
              item.priority === 'medium' ? 'Media' : 'Baja'}
           </Text>
         </View>
+        
+        {/* Mostrar progreso si está disponible */}
+        {item.progress && parseFloat(item.progress.toString()) > 0 && (
+          <View style={styles.progressContainer}>
+            <Ionicons name="bar-chart-outline" size={16} color="#6b7280" />
+            <Text style={styles.progressText}>
+              {Math.round(parseFloat(item.progress.toString()))}%
+            </Text>
+          </View>
+        )}
+
+        {/* Mostrar horas estimadas */}
+        {item.estimatedHours && (
+          <View style={styles.hoursContainer}>
+            <Ionicons name="time-outline" size={16} color="#6b7280" />
+            <Text style={styles.hoursText}>
+              {item.estimatedHours}h
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -333,8 +362,9 @@ const styles = StyleSheet.create({
   },
   taskFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     alignItems: 'center',
+    gap: 8,
   },
   dateContainer: {
     flexDirection: 'row',
@@ -362,6 +392,26 @@ const styles = StyleSheet.create({
   assigneeText: {
     fontSize: 12,
     color: '#6b7280',
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  progressText: {
+    fontSize: 12,
+    color: '#059669',
+    fontWeight: '600',
+  },
+  hoursContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  hoursText: {
+    fontSize: 12,
+    color: '#7c3aed',
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,
